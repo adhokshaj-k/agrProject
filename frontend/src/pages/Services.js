@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 export default function Services() {
     const { user } = useAuth();
+    const { addToCart } = useCart();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAdd, setShowAdd] = useState(false);
@@ -35,8 +37,14 @@ export default function Services() {
         e.preventDefault();
         if (!user) { showToast('Please login first', 'error'); return; }
         try {
-            await api.post(`/api/services/${booking.id}/book`, { notes: bookNotes });
-            showToast(`✅ ${booking.name} booked!`); setBooking(null);
+            const res = await api.post(`/api/services/${booking.id}/book`, { notes: bookNotes });
+            addToCart({
+                id: `booking_s_${res.data.id}`,
+                name: `Service: ${booking.name}`,
+                price: res.data.total_amount || booking.price
+            });
+            showToast(`🛒 ${booking.name} added to cart! Proceed to checkout.`);
+            setBooking(null);
         } catch (err) { showToast(err.response?.data?.detail || 'Failed', 'error'); }
     };
 

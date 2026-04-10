@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const CATEGORY_ICONS = {
     Seeds: '🌱', Fertilizers: '⚗️', Pesticides: '🧪',
@@ -32,6 +33,7 @@ function ProductCard({ product, onBook }) {
 
 export default function Marketplace() {
     const { user } = useAuth();
+    const { addToCart } = useCart();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -65,7 +67,8 @@ export default function Marketplace() {
 
     const handleBuy = (product) => {
         if (!user) { showToast('Please login to buy', 'error'); return; }
-        showToast(`🛒 ${product.name} added to cart! Proceed to payment.`);
+        addToCart(product);
+        showToast(`🛒 ${product.name} added to cart!`);
     };
 
     const handleAdd = async (e) => {

@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Payment() {
@@ -13,6 +14,15 @@ export default function Payment() {
     const [verifying, setVerifying] = useState(false);
     const [result, setResult] = useState(null);
     const [error, setError] = useState('');
+    const { cartItems, cartTotal, clearCart } = useCart();
+
+    useEffect(() => {
+        if (cartTotal > 0 && !amount && !description) {
+            setAmount(cartTotal.toString());
+            const itemsSummary = cartItems.map(i => i.name).join(', ');
+            setDescription(itemsSummary.length > 50 ? itemsSummary.substring(0, 47) + '...' : itemsSummary);
+        }
+    }, [cartTotal, cartItems, amount, description]);
 
     if (!user) { navigate('/login'); return null; }
 
@@ -37,6 +47,7 @@ export default function Payment() {
                 razorpay_signature: 'demo_signature_mock',
             });
             setResult(res.data);
+            if (cartTotal > 0) clearCart();
         } catch (err) { setError(err.response?.data?.detail || 'Verification failed'); }
         finally { setVerifying(false); }
     };

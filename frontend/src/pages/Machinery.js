@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 export default function Machinery() {
     const { user } = useAuth();
+    const { addToCart } = useCart();
     const [machines, setMachines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAdd, setShowAdd] = useState(false);
@@ -35,8 +37,13 @@ export default function Machinery() {
         e.preventDefault();
         if (!user) { showToast('Please login first', 'error'); return; }
         try {
-            await api.post(`/api/machines/${booking.id}/book`, bookForm);
-            showToast(`✅ ${booking.name} booked successfully!`);
+            const res = await api.post(`/api/machines/${booking.id}/book`, bookForm);
+            addToCart({
+                id: `booking_m_${res.data.id}`,
+                name: `Rental: ${booking.name}`,
+                price: res.data.total_amount || booking.daily_rate
+            });
+            showToast(`🛒 ${booking.name} added to cart! Proceed to checkout.`);
             setBooking(null); fetchMachines();
         } catch (err) { showToast(err.response?.data?.detail || 'Failed', 'error'); }
     };

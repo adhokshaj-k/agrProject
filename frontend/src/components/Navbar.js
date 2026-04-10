@@ -1,9 +1,11 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Store, Tractor, Wrench, Microscope, Bot, Settings, CreditCard, Leaf } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { Store, Tractor, Wrench, Microscope, Bot, Settings, CreditCard, Leaf, ShoppingCart } from 'lucide-react';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { cartCount, setIsCartOpen } = useCart();
     const navigate = useNavigate();
 
     const handleLogout = () => { logout(); navigate('/'); };
@@ -37,6 +39,10 @@ export default function Navbar() {
                 </div>
 
                 <div className="navbar-actions">
+                    <button className="btn-cart-nav" onClick={() => setIsCartOpen(true)}>
+                        <ShoppingCart size={20} />
+                        {cartCount > 0 && <span className="cart-badge-nav">{cartCount}</span>}
+                    </button>
                     {user ? (
                         <div className="user-badge">
                             <span style={{ fontSize: '0.875rem', color: '#374151', fontWeight: 500 }}>
